@@ -27,6 +27,10 @@ const useColumns = ({ columns, minWidth = 120, maxWidth = 2000, }: resizeDataTyp
     setResizableColumns((prev) => prev?.map((column) => updateResizableColumns(column, key, interWidth)));
   }, []);
 
+  const getColumnKey = (column: Column) => {
+    const key = column[INTERNAL_KEY] || column.key;
+    return Array.isArray(key) ? key.join('.') : key as string
+  }
 
   const initColumns = useCallback((columns: Column[]): Column[] => {
     return columns?.map((column) => {
@@ -41,7 +45,7 @@ const useColumns = ({ columns, minWidth = 120, maxWidth = 2000, }: resizeDataTyp
           minWidth,
           maxWidth,
           ...'width' in column && { width: column.width },
-          cellKey: column[INTERNAL_KEY] || column.key,
+          cellKey: getColumnKey(column),
           onResize: handleResizableColumns,
         }),
       };
@@ -54,7 +58,7 @@ const useColumns = ({ columns, minWidth = 120, maxWidth = 2000, }: resizeDataTyp
     interWidth: number
   ): T => {
     if (typeof column !== 'object' || key == undefined) return column;
-    const cellKey = column[INTERNAL_KEY] || column?.key;
+    const cellKey = getColumnKey(column);
     const isTarget = cellKey === key;
     const width = isTarget ? interWidth : column?.width;
     if (isTarget && width === column.width) return column;
@@ -79,7 +83,7 @@ const useColumns = ({ columns, minWidth = 120, maxWidth = 2000, }: resizeDataTyp
       return initialColumns;
     }
     return initialColumns.map((item) => {
-      const key = item[INTERNAL_KEY] as string | number | undefined || item.key;
+      const key = getColumnKey(item)
       if (key && columnMap.has(key)) {
         const width = columnMap.get(key)
         return updateResizableColumns(item, key, Number(width))
